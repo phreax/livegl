@@ -23,6 +23,7 @@ void renderScene(void) {
 
     t += 0.01;
 
+    // TODO: move uniform accessor to LiveGLServer
     int resloc = glGetUniformLocation(shader_server->id(), "resolution");
     int timeloc = glGetUniformLocation(shader_server->id(), "time");
     glUniform2f(resloc,800.0,600.0);
@@ -59,12 +60,9 @@ void init() {
     glClearDepth(1.0f);
     glEnable(GL_BLEND|GL_TEXTURE_2D|GL_DEPTH_TEST);
 
-    // initilize shader
+    // initilize shader server
     shader_server = new LiveGLServer();
-
     shader_server->bind();
-    
-        
 }
 
 void changeSize(int w, int h) {
@@ -95,8 +93,6 @@ void changeSize(int w, int h) {
 void idleFunc(void) {
     glutPostRedisplay();
 }
-
-
 
 int main(int argc, char **argv) {
 

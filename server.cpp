@@ -27,14 +27,12 @@ LiveGLServer::LiveGLServer(int port)
     // setup connection
     _socket->bind(endpoint);
 
-    cout << "connected" << endl;
+    cout << "Successfull connected to server" << endl;
 
     _pollitem[0].socket = *_socket;
     _pollitem[0].fd = 0;
     _pollitem[0].events = ZMQ_POLLIN;
     _pollitem[0].revents = 0;
-
-
 }
 
 LiveGLServer::~LiveGLServer() {
@@ -42,11 +40,13 @@ LiveGLServer::~LiveGLServer() {
     delete _shader;
 }
 
+/* DEPRECATED */
 void LiveGLServer::start() {
     cout << "LiveGL server started" << endl;
     int err = pthread_create(&_thread, NULL, run_thread, (void *)this );
 }
 
+/* DEPRECATED */
 void LiveGLServer::run() {
 
     for(;;) {
@@ -72,9 +72,6 @@ void LiveGLServer::poll() {
 
 void LiveGLServer::process(const char *data) {
 
-    cout << "data received" << endl;
-    cout << data << endl;
-
     Json::Reader reader;
     Json::Value root;
     bool succ = reader.parse(data, root);
@@ -92,23 +89,24 @@ void LiveGLServer::process(const char *data) {
     if(root.isMember("source")) 
         shader_source = root["source"].asCString();
 
-    cout << "parsing data successfuly" << endl;
-    
     if(shader_type && shader_source) {
             
         try {
             _shader->replaceShader(shader_type,shader_source);
         } catch(const char *e) {
-            cout << "new shader not loaded: " << e << endl;
+            cout << "Shader not loaded: " << e << endl;
         }
 
-        cout << "shader replaced" << endl;
+        cout << "New "<< shader_type << " programm loaded" << endl;
         return;
     }
 
     cout << "Invalid format" << endl;
 
 }
+
+/** getter &  setters 
+ */
 
 // get id of current shader
 int LiveGLServer::id() {
