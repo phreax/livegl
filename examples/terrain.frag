@@ -55,7 +55,7 @@ float fbm( in vec3 p )
            0.0625*noise3f(p*8.0);
 }
 float f(vec2 c) {
-    return -1.2+ 2.0*sin(10.0*c.x)*cos(10.0*c.y);// + noise3f(4.0*vec3(c,0.0));
+    return -1.2+ 2.0*sin(2.0*c.x)*cos(2.0*c.y);// + noise3f(4.0*vec3(c,0.0));
 }
 vec3 getnormal(vec3 p) {
 
