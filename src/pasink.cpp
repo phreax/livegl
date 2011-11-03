@@ -16,8 +16,8 @@ PASink::PASink(const char *device) :
 
     // low latency settings
     pa_buffer_attr ba;
-    ba.tlength = pa_usec_to_bytes(10*1000,&_sample_spec);
-    ba.fragsize = pa_usec_to_bytes(10*1000,&_sample_spec);
+    ba.tlength = pa_usec_to_bytes(20*1000,&_sample_spec);
+    ba.fragsize = pa_usec_to_bytes(20*1000,&_sample_spec);
     ba.minreq = pa_usec_to_bytes(0,&_sample_spec);
     ba.maxlength = pa_usec_to_bytes(20*1000,&_sample_spec); 
 

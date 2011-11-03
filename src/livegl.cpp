@@ -3,6 +3,48 @@
 
 LiveGLServer *shader_server;
 float t = 0.0;
+int mouse_x, mouse_y;
+float angle_x, angle_y;
+float cam_x, cam_y,cam_z; // cam position
+float lx, ly, lz;
+bool blocking = false;
+
+void mouseButton(int button, int state, int x, int y) {
+    
+    if(button == GLUT_LEFT_BUTTON) {
+        if(state == GLUT_UP) {
+            
+            mouse_x = -1;
+            mouse_y = -1;
+        }
+        else {
+            mouse_x = x;
+            mouse_y = y;
+        }
+    }
+}
+
+void mouseMove(int x, int y) {
+    if(mouse_x>=0) {
+        int dx = mouse_x -x;
+        int dy = mouse_y -y;
+
+        angle_x += dx/800.0;
+        angle_y += dy/600.0;
+        if(angle_x>=360.0) angle_x -=360.0;
+        if(angle_y>=360.0) angle_y -=360.0;
+
+        if(angle_x<0.0) angle_x +=360.0;
+        if(angle_y<0.0) angle_y +=360.0;
+
+
+        lx = sin(angle_x);
+        ly = sin(angle_y);
+        int loccam = glGetUniformLocation(shader_server->id(), "camd");
+        glUniform3f(loccam, lx,ly,lz);
+
+    }    
+}
 
 void renderScene(void) {
 
@@ -10,6 +52,12 @@ void renderScene(void) {
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    // set camara position
+    gluLookAt(cam_x,cam_y,cam_z, 
+              cam_x+lx,cam_y+ly,cam_z+lz,
+               0.0,1.0,0.0);
+    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
@@ -20,24 +68,20 @@ void renderScene(void) {
     glVertex3f(-1.0,1.0,-1.0);
     glVertex3f(-1.0,-1.0,-1.0);
     glEnd();
-
-    t += 0.01;
-
-    // TODO: move uniform accessor to LiveGLServer
-    int resloc = glGetUniformLocation(shader_server->id(), "resolution");
-    int timeloc = glGetUniformLocation(shader_server->id(), "time");
-    glUniform2f(resloc,800.0,600.0);
-    glUniform1f(timeloc,t);
-
-    // updatetime
-
+    
+    
     glutSwapBuffers();
-
-    shader_server->poll();
 }
 
-void init() {
+void init(int argc, char **argv) {
 
+    bool blocking = false;
+    if(argc>1) {
+        if(strcmp(argv[1],"-b")==0) blocking = true;
+    }
+    // init GLUT
+    glutInit(&argc,argv);
+    
     glutInitContextVersion(3, 0);
 
     glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
@@ -58,11 +102,23 @@ void init() {
     glShadeModel(GL_SMOOTH);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClearDepth(1.0f);
-    glEnable(GL_BLEND|GL_TEXTURE_2D|GL_DEPTH_TEST);
+    glEnable(GL_BLEND|GL_TEXTURE_2D|GL_TEXTURE_1D|GL_DEPTH_TEST);
 
     // initilize shader server
     shader_server = new LiveGLServer();
     shader_server->bind();
+
+    // init mouse variables
+    mouse_x=0;
+    mouse_y=0;
+    angle_x = 0.0;
+    angle_y = 0.0;
+    lx = 0.f;
+    ly = 0.f;
+    lz = 0.f;
+    cam_x = 0.f;
+    cam_y = 0.4f;
+    cam_z = 3.0f;
 }
 
 void changeSize(int w, int h) {
@@ -91,23 +147,37 @@ void changeSize(int w, int h) {
 
 
 void idleFunc(void) {
+
+    t += 0.01;
+
+    // TODO: move uniform accessor to LiveGLServer
+    int resloc = glGetUniformLocation(shader_server->id(), "resolution");
+    int timeloc = glGetUniformLocation(shader_server->id(), "time");
+    glUniform2f(resloc,800.0,600.0);
+    glUniform1f(timeloc,t);
+    shader_server->poll();
     glutPostRedisplay();
+    if(blocking) usleep(500000);
 }
 
 int main(int argc, char **argv) {
 
-    // init GLUT
-    glutInit(&argc,argv);
-    
-    init();
+    init(argc,argv);
 
     // init app
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutIdleFunc(idleFunc);
 
-    glutSwapBuffers();
+    // register mouse
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMove);
+
+
     glutMainLoop();
+    /*while(1) {
+        glutMainLoopEvent();
+    }*/
 
     return 0;
 }

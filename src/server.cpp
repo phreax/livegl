@@ -14,10 +14,13 @@ void *run_thread(void *arg) {
     server->run();
 }
 
-LiveGLServer::LiveGLServer(int port) 
+LiveGLServer::LiveGLServer(int port, bool blocking) 
     :  _ctx(new zmq::context_t(1))
     ,  _socket(new zmq::socket_t(*_ctx, ZMQ_PULL) )
     ,  _shader(new Shader())
+    ,  _blocking(blocking)
+    ,  _audiostream(new PASink())
+    ,  _specta(new SpectralAnalyzer())
 {
     
     char endpoint[64];
@@ -33,6 +36,21 @@ LiveGLServer::LiveGLServer(int port)
     _pollitem[0].fd = 0;
     _pollitem[0].events = ZMQ_POLLIN;
     _pollitem[0].revents = 0;
+
+    // setup 1d texture for spectral data
+    glGenTextures(1,&_soundtexture);
+    glBindTexture(GL_TEXTURE_1D,_soundtexture);
+    glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+
+    int width = _specta->nfreq() -1;
+
+    float dummytex[4*width];
+    memset(dummytex,0,sizeof(float)*width*4);
+
+//    memset(dummytex,0,width);
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA32F,width,0,GL_RGBA,GL_FLOAT,dummytex);
 }
 
 LiveGLServer::~LiveGLServer() {
@@ -52,7 +70,7 @@ void LiveGLServer::run() {
     for(;;) {
         zmq::message_t msg;
         _socket->recv(&msg);
-        process((const char*)msg.data());
+        handle_request((const char*)msg.data());
         pthread_testcancel();
     }
 
@@ -61,16 +79,44 @@ void LiveGLServer::run() {
 // poll for events (non-blocking)
 void LiveGLServer::poll() {
 
+    try {
+        // update sound texture
+        int16_t *sample = _audiostream->read_data();
+        _specta->analyze_sample(sample); 
+        float *spect = _specta->spectrum();
+        float *spect_flux = _specta->spectral_flux();
+        float *bands_three = _specta->bands_three();
+
+        unsigned int width = _specta->nfreq()-1;
+        glBindTexture(GL_TEXTURE_1D,_soundtexture);
+        glTexSubImage1D(GL_TEXTURE_1D, 0, 0, width, GL_RED, GL_FLOAT,spect);
+        glTexSubImage1D(GL_TEXTURE_1D, 0, 0, width, GL_GREEN, GL_FLOAT,spect_flux);
+
+        int uloc = glGetUniformLocation(_shader->id(), "bands_three");
+        glUniform1fv(uloc, 3, bands_three);
+
+    } catch(const char *e) {
+        cout << "error while processing audio: " << e << endl;
+    }
+
     zmq::message_t msg;
+    
+    if(_blocking) {
+        _socket->recv(&msg);
+        handle_request((const char*)msg.data());
+        return;
+    }
+   
+    // else no blocking
     int ret = zmq::poll(&_pollitem[0], 1,5);
     if(_pollitem[0].revents & ZMQ_POLLIN) {
         _socket->recv(&msg,0);
-        process((const char*)msg.data());
+        handle_request((const char*)msg.data());
     }
 
 }
 
-void LiveGLServer::process(const char *data) {
+void LiveGLServer::handle_request(const char *data) {
 
     Json::Reader reader;
     Json::Value root;
@@ -104,9 +150,6 @@ void LiveGLServer::process(const char *data) {
     cout << "Invalid format" << endl;
 
 }
-
-/** getter &  setters 
- */
 
 // get id of current shader
 int LiveGLServer::id() {

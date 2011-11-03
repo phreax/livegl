@@ -93,12 +93,22 @@ printf("nhigh = %d\n",nhigh);
 
     }
 
+    float old_temp;
+    float temp;
     for(int i=0;i<3;i++) {
-        _bands_three[i] = MAX(_bands_three[i],0.0);
-        if(_nframe > 1) {
-            _bands_three[i] = _bands_three[i]*0.1 + _bands_three_old[i]*0.9;
+//        _bands_three[i] = MAX(_bands_three[i],0.0);
+        // save old old val
+        old_temp = _bands_three_old[i];
+        temp = MAX(_bands_three[i],0.0);
+        _bands_three[i] = MAX(temp - old_temp-10.0,0.0);
+
+        if(_nframe > 1 ) {
+            _bands_three_old[i] = temp*0.1 + _bands_three_old[i]*0.9;
         }
-        _bands_three_old[i] = _bands_three[i];
+        else
+            _bands_three_old[i] = temp; 
+        
+
     }
 
     _nframe++;

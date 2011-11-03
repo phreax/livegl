@@ -9,18 +9,23 @@
 #include <GL/glext.h>
 #include <stdio.h>
 
+/* default shader programm */
+
+// vertex shader
 static const char* default_vp = 
+"varying vec3 eyePos,vPos;"
 "void main() {" 
 "    gl_FrontColor = gl_Color;"
-"    gl_Position = ftransform();"
+"    vPos = vec3(gl_ModelViewMatrix*gl_Vertex);"
+"    eyePos = vec3(gl_ModelViewMatrix*vec4(0.0,0.0,-1.0,1.0));"
+"    gl_Position = gl_Vertex;"
 "}";
 
+// fragment shader
 static const char* default_fp = 
 "void main() {" 
 "    gl_FragColor = vec4(0.0,0.0,1.0,1.0);"
 "}";
-
-
 
 class Shader {
 

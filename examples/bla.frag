@@ -1,6 +1,8 @@
 uniform vec2 resolution;
 uniform float time;
 
+uniform float bands_three[3];
+
 varying vec3 eyePos, vPos;
 uniform vec3 camd;
 
@@ -200,11 +202,11 @@ void main() {
 
         else if(matID == 6) {
             //col = dif*vec3(0.4,0.4,0.5)+spec*0.9+g;
-            col = dif*vec3(0.1,0.2,0.5) + 1.8*spec*vec3(0.2,0.32,0.23);
+            col = dif*vec3(0.1,0.2,0.5) + 0.4*spec*vec3(0.2,0.32,0.23)*bands_three[2];
         }
         else if(matID == 7) {
             //col = dif*vec3(0.4,0.4,0.5)+spec*0.9+g;
-            col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.6*spec*vec3(0.2,0.5,0.23);
+            col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.8*spec*vec3(0.2,0.5,0.23)*bands_three[1];
         }
         col = col;// + 0.2*vec3(0.1,0.2,0.5)*tmin;
     }

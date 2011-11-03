@@ -174,7 +174,7 @@ void main() {
 */
         float g = float(steps)/50.0;
         if(matID == 0) {
-            col = dif*vec3(0.6,0.5,0.6)+spec*0.6*bands_three[2]*vec3(0.0,0.6,0.3)+7.0*vec3(0.25,0.2,0.5)*g*g*g;
+            col = dif*vec3(0.6,0.5,0.6)+spec*0.6*bands_three[1]*vec3(0.0,0.6,0.3)+7.0*vec3(0.25,0.2,0.5)*g*g*g;
             
             //col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.6*spec*vec3(0.2,0.5,0.23);
         }
