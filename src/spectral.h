@@ -14,45 +14,44 @@ class SpectralAnalyzer {
 
         void analyze_sample(int16_t *sample);
 
-        inline float *spectrum() {return _spect;}
-        inline float *spectral_flux() {return _spect_flux;}
-        inline float *bands_three() {return _bands_three;}
-        inline unsigned int  samplesize() {return _samplesize;}
-        inline unsigned int  nfreq() {return _samplesize/2 +1;}
+        inline float *spectrum() {return spect;}
+        inline float *spectral_flux() {return spect_flux;}
+        inline float *bands_three() {return bands;}
+        inline float *bands_smooth() {return bands_s;}
+        inline unsigned int  nfreq() {return samplesize/2 +1;}
 
         // set cutoff frequencies
-        inline void set_low_freq(unsigned int lcf) {
-            if(lcf > _rate || lcf > _hcf) throw "low cutoff frequency: invalid value";
-            _lcf = lcf;
+        inline void set_lowfreq(unsigned int lcf) {
+            if(lcf > rate || lcf > hcf) throw "low cutoff frequency: invalid value";
+            lcf = lcf;
         }
 
-        inline void set_high_freq(unsigned int hcf) {
-            if(hcf > _rate || hcf < _lcf) throw "high cutoff frequency: invalid value";
-            _hcf = hcf;
+        inline void set_highfreq(unsigned int hcf) {
+            if(hcf > rate || hcf < lcf) throw "high cutoff frequency: invalid value";
+            hcf = hcf;
         }
 
     private:
 
-        unsigned int _samplesize; // size of one samplepack
-        unsigned int _rate;
+        unsigned int samplesize; // size of one samplepack
+        unsigned int rate;
 
-        unsigned int _lcf, _hcf;
+        unsigned int lcf, hcf;
 
-        double *_wave;           // sample vector in time domain
-        fftw_complex *_freq;     // sample vector in frequency domain
+        double *wave;           // sample vector in time domain
+        fftw_complex *freq;     // sample vector in frequency domain
 
-        float *_spect;          // energy of the current spectrum
-        float *_spect_old;      // energy of last spectrum
+        float *spect;          // energy of the current spectrum
+        float *spect_old;      // energy of last spectrum
 
-        float *_spect_flux;     // spectral difference
-        float *_bands_three;    // amplitude of low,mid,high bands
-        float *_bands_three_old;
+        float *spect_flux;     // spectral difference
+        float *bands;    // amplitude of low,mid,high bands
+        float *bands_s;  // smooth bands
+        float *bands_avg;
 
-        float _avgmin, _avgmax;
+        int nframe;
 
-        int _nframe;
-
-        fftw_plan _fftw_plan;    
+        fftw_plan plan;    
 };
 
 #endif
