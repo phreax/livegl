@@ -86,6 +86,7 @@ void LiveGLServer::poll() {
         float *spect = _specta->spectrum();
         float *spect_flux = _specta->spectral_flux();
         float *bands_three = _specta->bands_three();
+        float *bands_smooth = _specta->bands_smooth();
 
         unsigned int width = _specta->nfreq()-1;
         glBindTexture(GL_TEXTURE_1D,_soundtexture);
@@ -94,6 +95,8 @@ void LiveGLServer::poll() {
 
         int uloc = glGetUniformLocation(_shader->id(), "bands_three");
         glUniform1fv(uloc, 3, bands_three);
+        uloc = glGetUniformLocation(_shader->id(), "bands_smooth");
+        glUniform1fv(uloc, 3, bands_smooth);
 
     } catch(const char *e) {
         cout << "error while processing audio: " << e << endl;
@@ -128,26 +131,56 @@ void LiveGLServer::handle_request(const char *data) {
         return; 
     }
 
-    const char *shader_type = 0, *shader_source = 0;
+    string action;
 
-    if(root.isMember("shader")) 
-        shader_type = root["shader"].asCString();
-    if(root.isMember("source")) 
-        shader_source = root["source"].asCString();
+    if(!root.isMember("action")) {
+        cout << "Invalid message format" << endl;
+    }
+        
+    action = root["action"].asString();
 
-    if(shader_type && shader_source) {
-            
-        try {
-            _shader->replaceShader(shader_type,shader_source);
-        } catch(const char *e) {
-            cout << "Shader not loaded: " << e << endl;
-        }
-
-        cout << "New "<< shader_type << " programm loaded" << endl;
+    if(action == "pause") {
+    
+        cout << "Pause shader" << endl;
+        _shader->unbind();
         return;
     }
 
-    cout << "Invalid format" << endl;
+    if(action == "resume") {
+    
+        cout << "Resume shader" << endl;
+        _shader->bind();
+        return;
+    }
+
+    if(action == "send_shader") {
+
+        if(!_shader->active()) {
+            cout << "Shaders a currently deactivated." << endl;
+            return;
+        }
+
+        const char *shader_type = 0, *shader_source = 0;
+
+        if(root.isMember("shader")) 
+            shader_type = root["shader"].asCString();
+        if(root.isMember("source")) 
+            shader_source = root["source"].asCString();
+
+        if(shader_type && shader_source) {
+                
+            try {
+                _shader->replace_shader(shader_type,shader_source);
+            } catch(const char *e) {
+                cout << "Shader not loaded: " << e << endl;
+            }
+
+            cout << "New "<< shader_type << " programm loaded" << endl;
+            return;
+        }
+    
+        cout << "Missing parameters for: send_shader" << endl;
+    }
 
 }
 
@@ -156,7 +189,6 @@ int LiveGLServer::id() {
     return _shader->id();
 }
 
-// get id of current shader
 void LiveGLServer::bind() {
     _shader->bind();
 }

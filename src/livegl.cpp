@@ -173,11 +173,14 @@ int main(int argc, char **argv) {
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
 
-
     glutMainLoop();
-    /*while(1) {
-        glutMainLoopEvent();
-    }*/
+       
+    printf("exit renderer\n");
+
+    // do polling while mainloop is not active
+    while(1) {
+       shader_server->poll();
+    }
 
     return 0;
 }

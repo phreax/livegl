@@ -24,7 +24,7 @@ static const char* default_vp =
 // fragment shader
 static const char* default_fp = 
 "void main() {" 
-"    gl_FragColor = vec4(0.0,0.0,1.0,1.0);"
+"    gl_FragColor = vec4(0.0,0.0,0.0,1.0);"
 "}";
 
 class Shader {
@@ -34,12 +34,13 @@ public:
 	~Shader();
 	
     void init(const char *vsSource, const char *fsSource);
-    void replaceShader(const char *type, const char *source);
+    void replace_shader(const char *type, const char *source);
     
 	void bind();
 	void unbind();
 	
 	unsigned int id();
+    inline bool active() {return _active;};
 	bool valid();
 	
 private:

@@ -12,17 +12,61 @@ class LiveClient:
         self.socket.connect(endpoint)
         self.t = time.time()
 
-    def send_shader(self,shader):
+        self.active = True
+
+    def send_shader(self,shader_type):
+
+        msg = {"action":"send_shader"}
 
         now = time.time()
         if(now-self.t > 1):
             source = '\n'.join(vim.current.buffer)
+            msg.update({"shader":shader_type,"source":source})
             try:
-                self.socket.send_json({"shader":shader,"source":source},zmq.NOBLOCK)
+                self.socket.send_json(msg,zmq.NOBLOCK)
             except zmq.ZMQError:
                 print "Server not ready"
 
+
         self.t = now
+     
+    def pause_shader(self):
+
+        msg = {"action":"pause"}
+
+        now = time.time()
+        if(now-self.t > 1):
+            try:
+                self.socket.send_json(msg,zmq.NOBLOCK)
+            except zmq.ZMQError:
+                print "Server not ready"
+
+        
+        self.active = False
+        self.t = now
+
+
+    def resume_shader(self):
+
+        msg = {"action":"resume"}
+
+        now = time.time()
+        if(now-self.t > 1):
+            try:
+                self.socket.send_json(msg,zmq.NOBLOCK)
+            except zmq.ZMQError:
+                print "Server not ready"
+
+        self.active = True
+        self.t = now
+
+    def toggle_shader(self):
+        if(self.active):
+            self.pause_shader()
+        else:
+            self.resume_shader()
+
+
         
 if __name__ == "__main__":
 

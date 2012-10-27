@@ -5,7 +5,7 @@
 
 using namespace std;
 
-static int validateShader(GLuint shader) {
+static int validate_shader(GLuint shader) {
 	const unsigned int BUFFER_SIZE = 512;
 	char buffer[BUFFER_SIZE];
 	memset(buffer, 0, BUFFER_SIZE);
@@ -19,7 +19,7 @@ static int validateShader(GLuint shader) {
     return 0;
 }
 
-static int validateProgram(GLuint program) {
+static int validate_program(GLuint program) {
 	const unsigned int BUFFER_SIZE = 512;
 	char buffer[BUFFER_SIZE];
 	memset(buffer, 0, BUFFER_SIZE);
@@ -56,21 +56,21 @@ void Shader::init(const char *vsSource, const char *fsSource) {
 	glShaderSource(shader_fp, 1, &fsSource, 0);
     
 	glCompileShader(shader_vp);
-	_valid = validateShader(shader_vp) == 0 && _valid;
+	_valid = validate_shader(shader_vp) == 0 && _valid;
 	glCompileShader(shader_fp);
-	_valid = validateShader(shader_fp) == 0 && _valid;
+	_valid = validate_shader(shader_fp) == 0 && _valid;
     
 	shader_id = glCreateProgram();
 	glAttachShader(shader_id, shader_fp);
 	glAttachShader(shader_id, shader_vp);
 	glLinkProgram(shader_id);
-	_valid = validateProgram(shader_id) == 0 && _valid;
+	_valid = validate_program(shader_id) == 0 && _valid;
 
     if(!_valid)
         throw "Validation failed";
 }
 
-void Shader::replaceShader(const char *type, const char *source) {
+void Shader::replace_shader(const char *type, const char *source) {
 
     int shader_type;
    
@@ -84,7 +84,7 @@ void Shader::replaceShader(const char *type, const char *source) {
     glShaderSource(shader_new, 1, &source, 0);
     glCompileShader(shader_new);
 
-    if(validateShader(shader_new)<0) 
+    if(validate_shader(shader_new)<0) 
         throw "Shader failed validation";
 
     // attach new shader 
@@ -99,10 +99,10 @@ void Shader::replaceShader(const char *type, const char *source) {
     glLinkProgram(program_new);
 
     // TODO: don't through exception when there are only warnings
-    //if(validateProgram(program_new)<0)
+    //if(validate_program(program_new)<0)
     //    throw "Program failed validation";
     
-    validateProgram(program_new);
+    validate_program(program_new);
 
     // delete old program
     if(shader_type == GL_VERTEX_SHADER) {
