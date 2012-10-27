@@ -9,6 +9,9 @@ float cam_x, cam_y,cam_z; // cam position
 float lx, ly, lz;
 bool blocking = false;
 
+float width  = 800;
+float height = 600;
+
 void mouseButton(int button, int state, int x, int y) {
     
     if(button == GLUT_LEFT_BUTTON) {
@@ -143,6 +146,9 @@ void changeSize(int w, int h) {
 
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
+
+    width  = w;
+    height = h;
 }
 
 
@@ -153,7 +159,7 @@ void idleFunc(void) {
     // TODO: move uniform accessor to LiveGLServer
     int resloc = glGetUniformLocation(shader_server->id(), "resolution");
     int timeloc = glGetUniformLocation(shader_server->id(), "time");
-    glUniform2f(resloc,800.0,600.0);
+    glUniform2f(resloc,width,height);
     glUniform1f(timeloc,t);
     shader_server->poll();
     glutPostRedisplay();
@@ -175,12 +181,5 @@ int main(int argc, char **argv) {
 
     glutMainLoop();
        
-    printf("exit renderer\n");
-
-    // do polling while mainloop is not active
-    while(1) {
-       shader_server->poll();
-    }
-
     return 0;
 }

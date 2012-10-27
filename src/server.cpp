@@ -95,8 +95,9 @@ void LiveGLServer::poll() {
 
         int uloc = glGetUniformLocation(_shader->id(), "bands_three");
         glUniform1fv(uloc, 3, bands_three);
-        uloc = glGetUniformLocation(_shader->id(), "bands_smooth");
-        glUniform1fv(uloc, 3, bands_smooth);
+
+        uloc = glGetUniformLocation(_shader->id(), "sound");
+        glUniform3fv(uloc, 1, bands_smooth);
 
     } catch(const char *e) {
         cout << "error while processing audio: " << e << endl;
