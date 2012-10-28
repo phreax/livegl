@@ -1,6 +1,6 @@
 uniform float time;
 uniform vec2 resolution;
-uniform float bands_three[3];
+uniform vec3 sound;
 
 float maxcomp(vec3 v) {
     return max(max(v.x,v.y),v.z);
@@ -24,7 +24,7 @@ float torus( vec3 p) {
 }
 
 float deform(vec3 p) {
-    return clamp(bands_three[0],0.0,8.0)*0.1*(sin(14.0*p.x)*sin(20.0*p.y)*sin(17.*p.z) );
+    return clamp(sound.x,0.0,8.0)*0.1*(sin(14.0*p.x)*sin(20.0*p.y)*sin(17.*p.z) );
 }
 
 float sphere(vec3 p,vec3 t, float r) {
@@ -82,9 +82,9 @@ float map(vec3 p, out int matID) {
     
     float t = time;
     rX(p,t*4.0);
-    vec3 q = vec3(p.x,p.y,p.z);
+    vec3 q = vec3(0.7*p.x,p.y,p.z);
 
-    //float ds1 = sphere(opRep(p,0.3*bands_three[0]),vec3(0.0,0.5,0.0),0.05*bands_three[0]);
+    //float ds1 = sphere(opRep(p,0.3*sound.x),vec3(0.0,0.5,0.0),0.05*sound.x);
 
     //float s = sin(4.0*time);
     //float r = impulse(12.0,mod(time,1.0));
@@ -174,7 +174,7 @@ void main() {
 */
         float g = float(steps)/50.0;
         if(matID == 0) {
-            col = dif*vec3(0.6,0.5,0.6)+spec*0.6*bands_three[1]*vec3(0.0,0.6,0.3)+7.0*vec3(0.25,0.2,0.5)*g*g*g;
+            col = dif*vec3(0.6,0.5,0.6)+spec*0.6*sound.y*vec3(0.0,0.6,0.3)+7.0*vec3(0.25,0.2,0.5)*g*g*g;
             
             //col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.6*spec*vec3(0.2,0.5,0.23);
         }

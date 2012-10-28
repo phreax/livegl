@@ -1,6 +1,6 @@
 uniform float time;
 uniform vec2 resolution;
-uniform float bands_three[3];
+uniform vec3 sound; 
 
 float maxcomp(vec3 v) {
     return max(max(v.x,v.y),v.z);
@@ -22,7 +22,7 @@ float torus( vec3 p) {
 }
 
 float deform(vec3 p) {
-    return (sin(11.0*p.x)*sin(10.0*p.y)*sin(7.*p.z) )*0.14;//0.05*bands_three[1];
+    return (sin(11.0*p.x)*sin(10.0*p.y)*sin(7.*p.z) )*0.004*sound.x;
 }
 
 float sphere(vec3 p,vec3 t, float r) {
@@ -99,7 +99,8 @@ float map(vec3 p, out int matID) {
     float dp2 = planeY(p,0.0)-abs(deform(p));
     float s = sin(50.0*time);
     p.y /= 1.1+s;
-    float ds = sphere(p,vec3(0.0,0.05+0.02*s,2.0*time+0.3),0.01*bands_three[2]);
+    p.x *=  clamp(0.01*sound.x, 1.0, 2.0);
+    float ds = sphere(p,vec3(0.0,0.05+0.02*s,2.0*time+0.3),0.04);
     if(ds>dp2) matID = 0;
     else matID = 1;
     return min(dp2,ds);
@@ -185,12 +186,12 @@ void main() {
         */
         float g = float(steps)/50.0;
         if(matID == 0) {
-            col = dif*vec3(0.90,0.82,0.65)+spec*bands_three[1]*0.2;
+            col = dif*vec3(0.1,0.82,0.95)+spec*sound.y*0.1+g*g*vec3(0.33,0.21,0.6);
             
             //col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.6*spec*vec3(0.2,0.5,0.23);
         }
         if(matID == 1)
-            col = vec3(0.03,0.56,0.2)+spec*bands_three[1]*0.4+g*g*vec3(0.2,0.0,0.4);
+            col = sound.x*0.1*vec3(0.1,0,0)+vec3(0.18,0.77,0.02)+spec;
         hit = true;
     }
 
@@ -198,8 +199,9 @@ void main() {
    vec2 sun = vec2(0.0,0.45);
    p.x /= 1.1;
 
-   col = mix(col,vec3(0.5,0.6,0.7),1.0-exp(-tmin*2.11));
-   col = mix(col,vec3(0.85,0.89,0.91),bands_three[2]*0.6*exp(-4.0*length(sun-p)));
+   col = mix(col,vec3(0.1,0.65,0.76),1.0-exp(-tmin*0.51));
+   if(matID != 1)
+       col = mix(col,vec3(0.85,0.89,0.91),sound.y*0.1*exp(-4.0*length(sun-p)));
 
    gl_FragColor = vec4(col,1.0);
 }
