@@ -9,6 +9,8 @@ float cam_x, cam_y,cam_z; // cam position
 float lx, ly, lz;
 bool blocking = false;
 
+float macro[2];
+
 float width  = 800;
 float height = 600;
 
@@ -40,13 +42,52 @@ void mouseMove(int x, int y) {
         if(angle_x<0.0) angle_x +=360.0;
         if(angle_y<0.0) angle_y +=360.0;
 
-
-        lx = sin(angle_x);
-        ly = sin(angle_y);
+        lx = sin(M_PI*angle_x/180.0);
+        ly = cos(M_PI*angle_y/180.0);
         int loccam = glGetUniformLocation(shader_server->id(), "camd");
         glUniform3f(loccam, lx,ly,lz);
-
     }    
+}
+
+void keyPressed(unsigned char k, int x, int y) {
+    switch(k) {
+        case 'j':
+            if(macro[0]>-1.0)
+                macro[0] -= 0.01;
+            break; 
+        case 'k':
+            if(macro[0]<1.0)
+                macro[0] += 0.01;
+            break;
+        case 'h':
+            if(macro[1]>-1.0)
+                macro[1] -= 0.01;
+            break; 
+        case 'l':
+            if(macro[1]<1.0)
+                macro[1] += 0.01;
+            break;
+        case 'J':
+            if(macro[0]>-1.0)
+                macro[0] -= 0.001;
+            break; 
+        case 'K':
+            if(macro[0]<1.0)
+                macro[0] += 0.001;
+            break;
+        case 'H':
+            if(macro[1]>-1.0)
+                macro[1] -= 0.001;
+            break; 
+        case 'L':
+            if(macro[1]<1.0)
+                macro[1] += 0.001;
+            break;
+        default:
+            return;
+    }
+
+    printf("Changed macro to %.3f,%.3f\n",macro[0],macro[1]);
 }
 
 void renderScene(void) {
@@ -71,7 +112,6 @@ void renderScene(void) {
     glVertex3f(-1.0,1.0,-1.0);
     glVertex3f(-1.0,-1.0,-1.0);
     glEnd();
-    
     
     glutSwapBuffers();
 }
@@ -122,6 +162,8 @@ void init(int argc, char **argv) {
     cam_x = 0.f;
     cam_y = 0.4f;
     cam_z = 3.0f;
+    macro[0] = 0.0f;
+    macro[1] = 0.0f;
 }
 
 void changeSize(int w, int h) {
@@ -159,8 +201,12 @@ void idleFunc(void) {
     // TODO: move uniform accessor to LiveGLServer
     int resloc = glGetUniformLocation(shader_server->id(), "resolution");
     int timeloc = glGetUniformLocation(shader_server->id(), "time");
+    int macroloc = glGetUniformLocation(shader_server->id(), "macro");
+
     glUniform2f(resloc,width,height);
     glUniform1f(timeloc,t);
+    glUniform2fv(macroloc,1,macro);
+
     shader_server->poll();
     glutPostRedisplay();
     if(blocking) usleep(500000);
@@ -178,6 +224,8 @@ int main(int argc, char **argv) {
     // register mouse
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
+
+    glutKeyboardFunc(keyPressed);
 
     glutMainLoop();
        
