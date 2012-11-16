@@ -118,8 +118,8 @@ vec3 getnormal( vec3 p )
 }
 
 bool intersect(in vec3 ro, in vec3 rd, out float t, out int steps, out int matID) {
-    float maxt = 3.0;
-    int maxstep = 60;
+    float maxt = 4.0;
+    int maxstep = 100;
     t = 0.0;
     float d;
 
@@ -127,7 +127,7 @@ bool intersect(in vec3 ro, in vec3 rd, out float t, out int steps, out int matID
         vec3 p = ro+rd*t;
         d = map(p,matID);
 
-        if(d<0.001) {
+        if(d<0.01) {
             steps = i;
             return true;
         }

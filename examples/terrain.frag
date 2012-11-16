@@ -2,6 +2,7 @@
 
 uniform float time;
 uniform vec2 resolution;
+uniform float bands_smooth[3];
 
 float noise(int x) {
     
@@ -101,7 +102,7 @@ void main() {
     vec2 sc = vec2(0.1,0.0);
     float di = 4.0*-time;
     
-    float h = 0.3+0.5*sin(time);
+    float h = 0.3+0.5*sin(time)*0.01*bands_smooth[2];
     vec3 rd = normalize(vec3(p.x*sc.x-sc.y,-h+p.y,sc.x+p.x*sc.y));
     vec3 ro = vec3(0.4+di*sc.y,h,-1.4-di*sc.x) +0.3*vec3(sin(time),0.0,0.3*cos(time));
     

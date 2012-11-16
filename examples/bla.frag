@@ -1,7 +1,7 @@
 uniform vec2 resolution;
 uniform float time;
 
-uniform float bands_three[3];
+uniform vec3 sound;
 
 varying vec3 eyePos, vPos;
 uniform vec3 camd;
@@ -92,7 +92,10 @@ float map(vec3 p, out int matID) {
     float c = 2.2+1.3*cos(5.*time);
     //float ds =  opRep(p,c) + deform(p);
     
-    float ds = sphere(p,1.0);
+    float r = sound.x*0.02;
+    float r2 = sound.y*0.07;
+    float ds = torus(p-vec3(-1.6,0.0,0.0));
+    float ds1 = sphere(p-vec3(1.6,0.0,0.0),r2);
     //  float ds1 = sphere(p.xyz,1.5+cos(4.0*time)) +deform(p);
 
     //matID = 1; // plane
@@ -106,7 +109,7 @@ float map(vec3 p, out int matID) {
     //if(tmin == ds) matID = 6;
     //if(tmin == ds1) matID = 7;
     matID = 6;
-    return ds;
+    return min(ds,ds1);
 }  
 
 vec3 getnormal( vec3 p )
@@ -121,7 +124,7 @@ vec3 getnormal( vec3 p )
 
 bool raycast(in vec3 ro, in vec3 rd, out float t, out int steps, out int matID) {
     float maxt = 4.0;
-    int maxstep = 36;
+    int maxstep = 50;
     t = 0.0;
     float d;
 
@@ -129,7 +132,7 @@ bool raycast(in vec3 ro, in vec3 rd, out float t, out int steps, out int matID) 
         vec3 p = ro+rd*t;
         d = map(p,matID);
 
-        if(d<0.003) {
+        if(d<0.002) {
             steps = i;
             return true;
         }
@@ -202,11 +205,11 @@ void main() {
 
         else if(matID == 6) {
             //col = dif*vec3(0.4,0.4,0.5)+spec*0.9+g;
-            col = dif*vec3(0.1,0.2,0.5) + 0.4*spec*vec3(0.2,0.32,0.23)*bands_three[2];
+            col = dif*vec3(0.1,0.2,0.5) + 0.4*spec*vec3(0.2,0.32,0.23);
         }
         else if(matID == 7) {
             //col = dif*vec3(0.4,0.4,0.5)+spec*0.9+g;
-            col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.8*spec*vec3(0.2,0.5,0.23)*bands_three[1];
+            col = mix(dif*vec3(0.1,0.8,0.1),g*vec3(0.0,0.0,0.4),g)+0.8*spec*vec3(0.2,0.5,0.23)*sound.y;
         }
         col = col;// + 0.2*vec3(0.1,0.2,0.5)*tmin;
     }

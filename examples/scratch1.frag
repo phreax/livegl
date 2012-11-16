@@ -7,7 +7,7 @@ uniform vec3 sound;
 // require "fractal_textures.glsl"
 
 float scale = 5.0;
-vec3 cube =  vec3(0.09+0.0002*sound.y);
+vec3 cube =  vec3(0.05+0.0002*sound.y);
 
 
 vec3 opTwist( vec3 p )
@@ -21,7 +21,7 @@ vec3 opTwist( vec3 p )
 
 float minimumDistanceToTwistedCube(vec3 p)
 {
-    float t = 5.0*time-0.005*sound.z;
+    float t = 5.0*time-0.01*sound.z;
     // rotation angle according to "x"
     float rx= sin(p.x + t)*scale;
     float ry= sin(p.y + t)*scale;
@@ -57,10 +57,9 @@ float minimumDistanceToTwistedCube(vec3 p)
     // and use a much smaller step size to safely catch the twisted edges
     float d1 = length( dist ) * 0.4;
     d =  max(-d,d1);
-    float displace = +0.03*sin(2.+50.2*p.z)*sin(2.+50.2*p.x);
+    float displace = +0.03*sin(2.+50.2*p.x);
 
-    /*d += displace;*/
-    return d;
+    return d+displace;
 }
 float map(vec3 p, out int matID) {
 
@@ -85,8 +84,7 @@ void main() {
 
     /*if(p.y>0.1) p.x = -p.x;*/
 
-    /*cube.x = 2.0*abs(sin(2.0*time));*/
-    cube.z = 10.5*abs(sin(20.0*time));
+    cube.x = 2.0*abs(sin(2.0*time));
     float t = time;
     /*vec3 ls = vec3(0.4,3.2,-20.2);*/
     vec3 ls = vec3(0.0);
@@ -115,7 +113,7 @@ void main() {
         vec2 coord3 = (inter.xy / cube.z);
 
         vec4 col1 = julia(coord1*0.5);
-        vec4 col2 = 1.0-julia(coord2*0.5);
+        vec4 col2 = julia(coord2*0.5);
         vec4 col3 = julia(coord3*0.5);
 
         vec3 weights = blend_weights(n);
@@ -129,7 +127,7 @@ void main() {
         if(dif<=0.0) spec=0.0;
 
 
-        gl_FragColor = dif*vec4(1.0) +2.0*spec-s*vec4(0.3,0.2,1.0,1.0);
+        gl_FragColor = dif*vec4(1.0) -2.0*spec-s*vec4(0.3,0.2,1.0,1.0);
         /*gl_FragColor *= mix(gl_FragColor,2.-col,0.2);*/
         gl_FragColor *= 1.9-col;
         /*gl_FragColor = 1.0-gl_FragColor ;*/

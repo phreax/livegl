@@ -1,5 +1,6 @@
 uniform vec2 resolution;
 uniform float time;
+uniform vec3 sound;
 
 varying vec3 eyePos, vPos;
 uniform vec3 camd;
@@ -26,7 +27,7 @@ float torus( vec3 p) {
 }
 
 float deform(vec3 p) {
-    return sin(5.0*time)*0.1*(sin(14.0*p.x)*sin(10.0*p.y)*sin(11.*p.z) );
+    return sin(5.0*time)*0.1*(sin(14.0*p.x)*sin(10.0*p.y)*sin(11.*p.z) )*0.01*sound.y;
 }
 
 float sphere(vec3 p,float r) {
@@ -82,29 +83,27 @@ float planeZ(in vec3 p, in float z)
 float map(vec3 p, out int matID) {
 
 
-    /*float dp1 = planeX(p,-1.0);
+    float dp1 = planeX(p,-1.0);
     float dp2 = planeX(p,1.0);
     float dp3 = planeY(p,-1.0);
     float dp4 = planeY(p,1.0);
-    float dp5 = planeZ(p,1.0);*/
+    float dp5 = planeZ(p,1.0);
     float c = 2.2+1.3*cos(5.*time);
     float ds =  opRep(p,c) + deform(p);
-    //float ds2 = sphere(p,1.0) +deform(p*8.0);
-    float ds1 = sphere(p.xyz,1.5+cos(4.0*time)) +deform(p);
+    float ds2 = sphere(p,1.0) +deform(p*8.0);
+    float ds1 = sphere(p.xyz,sound.y*0.01) +deform(p);
 
-    //matID = 1; // plane
-    //float tmin =  min(min(min(min(min(dp1,dp2),dp3),dp4),dp5),ds);
-    float tmin = min(ds,ds1);
-    /*if(tmin == dp2) matID = 2;
+    matID = 1; // plane
+    float tmin =  min(min(min(min(min(dp1,dp2),dp3),dp4),dp5),ds);
+    /*float tmin = ds1;*/
+    if(tmin == dp2) matID = 2;
     if(tmin == dp3) matID = 3;
     if(tmin == dp4) matID = 4;
     if(tmin == dp5) matID = 5;
-    */
     if(tmin == ds) matID = 6;
     if(tmin == ds1) matID = 7;
-
-    float dd = ds1-ds;
-    return mix(ds1,ds,exp(-0.1*dd*dd));
+    matID = 7;
+    return tmin;
 }  
 
 vec3 getnormal( vec3 p )
