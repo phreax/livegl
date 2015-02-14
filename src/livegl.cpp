@@ -1,4 +1,6 @@
 #include <math.h>
+#include <unistd.h>
+
 #include "server.h"
 
 LiveGLServer *shader_server;
