@@ -1,12 +1,9 @@
-INCPATH = -I./ -I/usr/include
-LIBPATH = -L/usr/lib -L/usr/lib/i386-linux-gnu 
-CFLAGS  = -O2 -g
-LDFLAGS = -Wl,--rpath -Wl,/usr/lib -Wno-write-strings -lm  -lstdc++  -lGL -lglut -lGLU -lGLEW -pthread -lzmq -ljson_linux-gcc-4.4.5_libmt -lfftw3 -lpulse -lpulse-simple
-
+CFLAGS  = -O2 -g `pkg-config --cflags jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple`
+LDFLAGS = -Wl,--rpath -Wl,/usr/lib -Wno-write-strings -lm -lstdc++ `pkg-config --libs jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple` -lglut
 RM 		= /bin/rm -f
-CC		= colorgcc 
+CC		= g++
 SOURCES = shader.cpp server.cpp livegl.cpp pasink.cpp spectral.cpp
-OBJECTS = $(SOURCES:.c=.o)
+OBJECTS = $(SOURCES:.cpp=.o)
 MAIN	= livegl
 TEST	= spectral_test
 TEST_OBJ= pasink.o spectral.o spectral_test.o
@@ -16,13 +13,13 @@ all: $(MAIN)
 test: $(TEST)
 
 $(MAIN): $(OBJECTS)
-	$(CC) $^ $(LIBPATH) $(LDFLAGS) $(CFLAGS)  -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 
 $(TEST): $(TEST_OBJ)
-	$(CC) $^ $(LIBPATH) $(LDFLAGS) $(CFLAGS)  -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 
-.c.o:
-	$(CC) $(INCPATH) $(CFLAGS) -c $< 
+.cpp.o:
+	$(CC) $(CFLAGS) -c $< 
 
 clean:
 	$(RM) *~ *.o $(MAIN)
