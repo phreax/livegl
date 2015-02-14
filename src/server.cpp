@@ -14,14 +14,15 @@ void *run_thread(void *arg) {
     server->run();
 }
 
-LiveGLServer::LiveGLServer(int port, bool blocking) 
+LiveGLServer::LiveGLServer(bool mute, int port, bool blocking) 
     :  _ctx(new zmq::context_t(1))
     ,  _socket(new zmq::socket_t(*_ctx, ZMQ_PULL) )
     ,  _shader(new Shader())
     ,  _blocking(blocking)
-    ,  _audiostream(new PASink())
     ,  _specta(new SpectralAnalyzer())
 {
+    if (!mute)
+        _audiostream = new PASink();
     
     char endpoint[64];
     sprintf(endpoint, "tcp://127.0.0.1:%d",port);
@@ -76,9 +77,8 @@ void LiveGLServer::run() {
 
 }
 
-// poll for events (non-blocking)
-void LiveGLServer::poll() {
-
+void LiveGLServer::update_sound_texture()
+{
     try {
         // update sound texture
         int16_t *sample = _audiostream->read_data();
@@ -102,6 +102,12 @@ void LiveGLServer::poll() {
     } catch(const char *e) {
         cout << "error while processing audio: " << e << endl;
     }
+}
+
+// poll for events (non-blocking)
+void LiveGLServer::poll() {
+    if(_audiostream)
+        update_sound_texture();
 
     zmq::message_t msg;
     
