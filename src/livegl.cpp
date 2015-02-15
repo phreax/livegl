@@ -9,7 +9,7 @@ int mouse_x, mouse_y;
 float angle_x, angle_y;
 float cam_x, cam_y,cam_z; // cam position
 float lx, ly, lz;
-bool blocking = false;
+bool blocking = false, mute = false;
 
 float macro[2];
 
@@ -119,15 +119,29 @@ void renderScene(void) {
 }
 
 void init(int argc, char **argv) {
+    int gl_ver_maj = 3, gl_ver_min = 0;
+    int c;
 
-    bool blocking = false;
-    if(argc>1) {
-        if(strcmp(argv[1],"-b")==0) blocking = true;
+    while ((c = getopt(argc, argv, "mbg:")) != EOF) {
+        switch (c) {
+            case 'b':
+                blocking = true;
+                break;
+
+            case 'm':
+                mute = true;
+                break;
+
+            case 'g':
+                sscanf(optarg, "%d.%d", &gl_ver_maj, &gl_ver_min);
+                break;
+        }
     }
+
     // init GLUT
     glutInit(&argc,argv);
     
-    glutInitContextVersion(3, 0);
+    glutInitContextVersion(gl_ver_maj, gl_ver_min);
 
     glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
     glutInitWindowSize(800,600);
@@ -150,7 +164,7 @@ void init(int argc, char **argv) {
     glEnable(GL_BLEND|GL_TEXTURE_2D|GL_TEXTURE_1D|GL_DEPTH_TEST);
 
     // initilize shader server
-    shader_server = new LiveGLServer();
+    shader_server = new LiveGLServer(mute);
     shader_server->bind();
 
     // init mouse variables

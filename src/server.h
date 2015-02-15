@@ -10,7 +10,7 @@ class LiveGLServer {
 
     public:
         
-        LiveGLServer(int port=4223, bool blocking=false);
+        LiveGLServer(bool mute=false, int port=4223, bool blocking=false);
         ~LiveGLServer();
 
         // bind current shader
@@ -24,6 +24,7 @@ class LiveGLServer {
 
     protected:
 
+        void update_sound_texture();
         void handle_request(const char* data);
 
     private:
