@@ -1,8 +1,8 @@
-CFLAGS  = -O2 -g `pkg-config --cflags jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple`
-LDFLAGS = -Wl,--rpath -Wl,/usr/lib -Wno-write-strings -lm -lstdc++ `pkg-config --libs jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple`  -pthread -lglut
+CFLAGS  = -O2 -g `pkg-config --cflags jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple rtmidi`
+LDFLAGS = -Wl,--rpath -Wl,/usr/lib -Wno-write-strings -lm -lstdc++ `pkg-config --libs jsoncpp gl glu glew libzmq fftw3 libpulse libpulse-simple rtmidi`  -pthread -lglut
 RM 		= /bin/rm -f
 CC		= g++
-SOURCES = shader.cpp server.cpp livegl.cpp pasink.cpp spectral.cpp
+SOURCES = shader.cpp server.cpp livegl.cpp pasink.cpp spectral.cpp midi_message.cpp midi_input.cpp uniform.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 MAIN	= livegl
 TEST	= spectral_test

@@ -8,4 +8,4 @@ $(MAIN):
 	$(CP) src/$(MAIN) .
 
 clean:
-	make clean -C src
+	rm $(MAIN)

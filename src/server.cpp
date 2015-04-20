@@ -1,4 +1,5 @@
 #include "server.h" 
+#include "midi_message.h"
 #include <string>
 #include <json/value.h>
 #include <json/reader.h>
@@ -6,6 +7,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -21,6 +23,7 @@ LiveGLServer::LiveGLServer(int port, bool blocking)
     ,  _blocking(blocking)
     ,  _audiostream(new PASink())
     ,  _specta(new SpectralAnalyzer())
+    ,  _midiin(new MidiInput(MIDI_PORT))
 {
     
     char endpoint[64];
@@ -51,6 +54,27 @@ LiveGLServer::LiveGLServer(int port, bool blocking)
 //    memset(dummytex,0,width);
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA32F,width,0,GL_RGBA,GL_FLOAT,dummytex);
+
+    init_midi_mapping();
+}
+
+void LiveGLServer::init_midi_mapping() {
+    
+    for( int i = MIDI_MAP_CC_START; i <= MIDI_MAP_CC_END; i++ ) {
+        char *uniform_name = (char *)malloc(16);
+        int midi_signature = make_midi_signature(i, MIDI_TYPE_CC);
+        snprintf(uniform_name, 16, "midi_cc_%d", i);
+
+
+        Uniform *uniform = new Uniform(uniform_name);
+        _midi_map_uniforms[midi_signature] = uniform;
+        cout << "Map " << _midi_map_uniforms[midi_signature]->name() << "( " << (int)midi_signature << " ) to uniform" << endl;
+    }
+        cout << _midi_map_uniforms.size() << " value mapped" <<endl;
+}
+
+int LiveGLServer::make_midi_signature(int value, int type) {
+    return (type << 8) | value;
 }
 
 LiveGLServer::~LiveGLServer() {
@@ -79,6 +103,59 @@ void LiveGLServer::run() {
 // poll for events (non-blocking)
 void LiveGLServer::poll() {
 
+    process_audio();
+    process_midi();
+    update_uniforms();
+
+    zmq::message_t msg;
+    
+    if(_blocking) {
+        _socket->recv(&msg);
+        handle_request((const char*)msg.data());
+        return;
+    }
+   
+    // else no blocking
+    int ret = zmq::poll(&_pollitem[0], 1,5);
+    if(_pollitem[0].revents & ZMQ_POLLIN) {
+        _socket->recv(&msg,0);
+        handle_request((const char*)msg.data());
+    }
+
+}
+
+void LiveGLServer::process_midi() {
+  
+    MidiMessage *midi_msg = _midiin->get_message();
+    if(midi_msg) {
+        std::cout << "MIDI: " << midi_msg->to_string() << endl;
+        filter_for_midi_mapping(midi_msg);
+        delete midi_msg;
+    }
+}
+
+void LiveGLServer::update_uniforms() {
+    for (map<int, Uniform *>::iterator it=_midi_map_uniforms.begin(); it!=_midi_map_uniforms.end(); ++it) {
+        Uniform *uniform = (Uniform *)it->second;
+        uniform->update_gl(_shader->id());
+    }
+}
+
+void LiveGLServer::filter_for_midi_mapping(MidiMessage *midi_msg) {
+    if(midi_msg->is_cc() && midi_msg->cc_chan() == MIDI_CC_CHAN) {
+       std::cout << "filter for midi mapping" << std::endl;
+       int midi_signature = make_midi_signature(midi_msg->cc_number(), MIDI_TYPE_CC);
+       Uniform *uniform = _midi_map_uniforms[midi_signature];
+       if( uniform ) {
+         uniform->set( midi_msg->cc_value_f() );
+         cout << "Update " << uniform->name() << " = " << midi_msg->cc_value_f() << std::endl;
+       } else {
+        cout << "No uniform mapped to CC#" << midi_msg->cc_number() << endl;
+       }
+    }
+}
+
+void LiveGLServer::process_audio() {
     try {
         // update sound texture
         int16_t *sample = _audiostream->read_data();
@@ -102,22 +179,6 @@ void LiveGLServer::poll() {
     } catch(const char *e) {
         cout << "error while processing audio: " << e << endl;
     }
-
-    zmq::message_t msg;
-    
-    if(_blocking) {
-        _socket->recv(&msg);
-        handle_request((const char*)msg.data());
-        return;
-    }
-   
-    // else no blocking
-    int ret = zmq::poll(&_pollitem[0], 1,5);
-    if(_pollitem[0].revents & ZMQ_POLLIN) {
-        _socket->recv(&msg,0);
-        handle_request((const char*)msg.data());
-    }
-
 }
 
 void LiveGLServer::handle_request(const char *data) {
