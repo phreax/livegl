@@ -2,8 +2,10 @@ uniform vec2 resolution;
 uniform float time;
 uniform vec3 sound;
 
+// require "midi_controls.glsl"
+
 void main(void) {
-    float t = 3.*time;
+    float t = 10.*time * midi_cc_22;
     vec2 z = -1.0 + 2.0*gl_FragCoord.xy/resolution.xy;
 
     float cy = 0.2+ .6*sin(1.9*t)+0.01*sound.y;

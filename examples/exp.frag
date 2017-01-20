@@ -130,7 +130,7 @@ void main() {
 
 
         gl_FragColor = dif*vec4(1.0) +2.0*spec-s*vec4(0.3,0.2,1.0,1.0);
-        /*gl_FragColor *= mix(gl_FragColor,2.-col,0.2);*/
+        gl_FragColor *= mix(gl_FragColor,2.-col,0.2);
         gl_FragColor *= 1.9-col;
         /*gl_FragColor = 1.0-gl_FragColor ;*/
         /*gl_FragColor += mix(gl_FragColor,vec4(0.24,0.11,0.63,1.0),0.9);*/

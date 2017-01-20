@@ -3,24 +3,9 @@ uniform vec3 sound;
 uniform float time;
 uniform sampler1D spectrum;
 
-uniform float midi_cc_21,
-              midi_cc_22,
-              midi_cc_23,
-              midi_cc_24,
-              midi_cc_25,
-              midi_cc_26,
-              midi_cc_27,
-              midi_cc_28,
-              midi_cc_31,
-              midi_cc_32,
-              midi_cc_33,
-              midi_cc_34,
-              midi_cc_35,
-              midi_cc_36,
-              midi_cc_37,
-              midi_cc_38;
+// require "midi_controls.glsl"
 
-vec4 background_color = vec4(midi_cc_31, midi_cc_32, midi_cc_33, 1.0);
+vec4 background_color = midi_color1;
 
 float soundtex(float x) {
     vec4 tex = texture1D(spectrum,x);
@@ -46,9 +31,9 @@ void main() {
     float asp = resolution.x/resolution.y;
     vec2 o = vec2(p.x*asp,p.y);
 
-    float s1 = midi_cc_22;
-    float s2 = midi_cc_23;
-    float s3 = midi_cc_24;
+    float s1 = midi_cc_22+0.03*sound.y;
+    float s2 = midi_cc_23+0.01*sound.x;
+    float s3 = sin(midi_cc_24+0.005*sound.x);
 
     vec2 c1 = vec2(0.25*asp,0.25);
     vec2 c2 = vec2(0.5*asp,0.75);
@@ -65,9 +50,9 @@ void main() {
     else if(length(o-c1)<s1)
         gl_FragColor = mix(vec4(0.0,0.03,0.21,1.0),vec4(0.09,0.29,0.24,0), 0.02*sound.x);
     else if(length(o-c2)<s2)
-        gl_FragColor = mix(vec4(0.0,0.03,0.21,1.0),vec4(0.29,0.24,0.09,0), 0.03*sound.y);
+        gl_FragColor = mix(vec4(midi_cc_34,midi_cc_35,midi_cc_36,0),vec4(midi_cc_35,midi_cc_34,midi_cc_36,0), 0.23*sound.y);
     else if(length(o-c3)<s3)
-        gl_FragColor = mix(vec4(0.0,0.03,0.21,1.0),vec4(0.24,0.09,0.29,0), 0.1*sound.z);
+        gl_FragColor = mix(vec4(midi_cc_36,midi_cc_34,midi_cc_35,0),vec4(midi_cc_36,midi_cc_35,midi_cc_34,0), 0.23*sound.y);
     else 
         gl_FragColor = background_color;
 

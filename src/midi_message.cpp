@@ -23,6 +23,26 @@ bool MidiMessage::is_note_off() {
     return (_message[0] >> 4) == 0x8;
 }
 
+bool MidiMessage::is_system_exclusive() {
+    return _message[0] == 0xf0;
+}
+
+bool MidiMessage::is_start() {
+    if(_message.size() > 5) {
+       return _message[3] == 0x6 && _message[4] == 0x2;
+    } else {
+       return false;
+    }
+}
+
+bool MidiMessage::is_stop() {
+    if(_message.size() > 5) {
+       return _message[3] == 0x6 && _message[4] == 0x1;
+    } else {
+       return false;
+    }
+}
+
 int MidiMessage::note_chan() {
     return (int)(_message[0] & 0xf) + 1;
 }
@@ -59,8 +79,12 @@ string MidiMessage::to_string() {
         stream << "CHAN" << setw(2) <<  note_chan() << " CC#  ";
         stream << setw(3) << note_value() << " " << setw(3) << note_velocity();
     }
+    else if(is_system_exclusive()) {
+        stream << "EXCL ";
+        if(is_start()) stream << "start";
+        if(is_stop()) stream << "stop";
+    }
     else {
-
         int nbytes = _message.size();
         for ( int i=0; i < nbytes; i++  ) 
             stream << "Byte " << i << " = " << (int)_message[i] << ", ";

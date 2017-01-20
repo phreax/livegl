@@ -4,7 +4,6 @@
 #include "server.h"
 
 LiveGLServer *shader_server;
-float t = 0.0;
 int mouse_x, mouse_y;
 float angle_x, angle_y;
 float cam_x, cam_y,cam_z; // cam position
@@ -198,15 +197,11 @@ void changeSize(int w, int h) {
 
 void idleFunc(void) {
 
-    t += 0.01;
-
     // TODO: move uniform accessor to LiveGLServer
     int resloc = glGetUniformLocation(shader_server->id(), "resolution");
-    int timeloc = glGetUniformLocation(shader_server->id(), "time");
     int macroloc = glGetUniformLocation(shader_server->id(), "macro");
 
     glUniform2f(resloc,width,height);
-    glUniform1f(timeloc,t);
     glUniform2fv(macroloc,1,macro);
 
     shader_server->poll();

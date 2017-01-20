@@ -24,6 +24,9 @@ LiveGLServer::LiveGLServer(int port, bool blocking)
     ,  _audiostream(new PASink())
     ,  _specta(new SpectralAnalyzer())
     ,  _midiin(new MidiInput(MIDI_PORT))
+    ,  _time_uniform(Uniform("time"))
+    ,  _time_step_size(0.01)
+    ,  _is_paused(false)
 {
     
     char endpoint[64];
@@ -67,10 +70,10 @@ void LiveGLServer::init_midi_mapping() {
 
 
         Uniform *uniform = new Uniform(uniform_name);
-        _midi_map_uniforms[midi_signature] = uniform;
-        cout << "Map " << _midi_map_uniforms[midi_signature]->name() << "( " << (int)midi_signature << " ) to uniform" << endl;
+        _midi_uniform_map[midi_signature] = uniform;
+        cout << "Map " << _midi_uniform_map[midi_signature]->name() << "( " << (int)midi_signature << " ) to uniform" << endl;
     }
-        cout << _midi_map_uniforms.size() << " value mapped" <<endl;
+        cout << _midi_uniform_map.size() << " value mapped" <<endl;
 }
 
 int LiveGLServer::make_midi_signature(int value, int type) {
@@ -128,30 +131,47 @@ void LiveGLServer::process_midi() {
   
     MidiMessage *midi_msg = _midiin->get_message();
     if(midi_msg) {
-        std::cout << "MIDI: " << midi_msg->to_string() << endl;
+        cout <<  midi_msg->to_string() << endl;
         filter_for_midi_mapping(midi_msg);
         delete midi_msg;
     }
 }
 
 void LiveGLServer::update_uniforms() {
-    for (map<int, Uniform *>::iterator it=_midi_map_uniforms.begin(); it!=_midi_map_uniforms.end(); ++it) {
+    // update time
+    if( !_is_paused ) {
+        _time_uniform.incr(_time_step_size);
+        _time_uniform.update_shader(_shader->id());
+    }
+
+    // update midi mapped uniforms
+    for (MidiUniformMap::iterator it=_midi_uniform_map.begin(); it!=_midi_uniform_map.end(); ++it) {
         Uniform *uniform = (Uniform *)it->second;
-        uniform->update_gl(_shader->id());
+        uniform->update_shader(_shader->id());
     }
 }
 
 void LiveGLServer::filter_for_midi_mapping(MidiMessage *midi_msg) {
     if(midi_msg->is_cc() && midi_msg->cc_chan() == MIDI_CC_CHAN) {
-       std::cout << "filter for midi mapping" << std::endl;
+
+       cout << midi_msg << endl;
        int midi_signature = make_midi_signature(midi_msg->cc_number(), MIDI_TYPE_CC);
-       Uniform *uniform = _midi_map_uniforms[midi_signature];
-       if( uniform ) {
+       MidiUniformMap::const_iterator it = _midi_uniform_map.find(midi_signature);
+       if( it != _midi_uniform_map.end() ) {
+         Uniform *uniform = it->second;
          uniform->set( midi_msg->cc_value_f() );
-         cout << "Update " << uniform->name() << " = " << midi_msg->cc_value_f() << std::endl;
        } else {
         cout << "No uniform mapped to CC#" << midi_msg->cc_number() << endl;
        }
+    }
+    // system exlusive
+    else if(midi_msg->is_system_exclusive()) {
+        if(midi_msg->is_stop()) {
+            _is_paused = true;
+        }
+        else if(midi_msg->is_start()) {
+            _is_paused = !_is_paused;
+        }
     }
 }
 

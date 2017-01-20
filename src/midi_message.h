@@ -9,11 +9,15 @@
 class MidiMessage {
 
 public:
+    
     MidiMessage(double timestamp, std::vector<unsigned char> message);
 
     bool is_cc();
     bool is_note_on();
     bool is_note_off();
+    bool is_start();
+    bool is_stop();
+    bool is_system_exclusive();
 
     int note_chan();
     int note_value();

@@ -11,8 +11,9 @@ public:
     Uniform(const char* name, unsigned int dimension=1);
     ~Uniform();
 
-    void update_gl(int shader_id);
+    void update_shader(int shader_id);
 
+    void incr(float v);
     void set(float v1);
     void set(float v1, float v2);
     void set(float v1, float v2, float v3);
