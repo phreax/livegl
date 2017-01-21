@@ -8,13 +8,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
-#include "audioconfig.h"
 
 class PASink {
 
     public:
 
-        PASink(const char *device = PADEVICE);
+        PASink(const char *device);
         ~PASink();
 
         int16_t *read_data();

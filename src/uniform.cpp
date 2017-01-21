@@ -8,7 +8,7 @@
 
 
 Uniform::Uniform(const char* name, unsigned int dimension)
-    : _dimension(dimension), _name(name) 
+    : _dimension(dimension), UniformBase(name) 
 {
     if(dimension > 4 || dimension < 1) {
         throw "Invalid value for dimension: 1 <= x <= 4";
@@ -66,6 +66,28 @@ void Uniform::set(float v1, float v2, float v3, float v4) {
 void Uniform::set_value(unsigned int index, float v1) {
 
     if(index > _dimension-1) {
+        throw "Index out of range";
+    }
+    _data[index] = v1;
+}
+
+UniformIv::UniformIv(const char* name, unsigned int size)
+    : _size(size), UniformBase(name) 
+{
+    _data = new int[_size]();
+}
+
+UniformIv::~UniformIv() { delete _data; }
+
+void UniformIv::update_shader(int shader_id) {
+
+    int location = glGetUniformLocation(shader_id, _name);
+    glUniform1iv(location, _size, _data);
+}
+
+void UniformIv::set_value(unsigned int index, int v1) {
+
+    if(index > _size-1) {
         throw "Index out of range";
     }
     _data[index] = v1;

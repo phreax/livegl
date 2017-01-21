@@ -51,6 +51,11 @@ int MidiMessage::note_value() {
     return (int)(_message[1]);
 }
 
+// quantized to to scale 0-11 
+int MidiMessage::note_value_scaled() {
+    return note_value() % 12;
+}
+
 int MidiMessage::note_velocity() {
     return (int)(_message[2]);
 }
@@ -72,8 +77,12 @@ string MidiMessage::to_string() {
 
     stream << setfill('0');
     if(is_note_on()) {
-        stream << "CHAN" << setw(2) <<  note_chan() << " Note ";
+        stream << "CHAN" << setw(2) <<  note_chan() << " Note On ";
         stream << setw(3) << note_value() << " " << setw(3) << note_velocity();
+    }
+    else if(is_note_off()) {
+        stream << "CHAN" << setw(2) <<  note_chan() << " Note Off ";
+        stream << setw(3) << note_value() << " ";
     }
     else if(is_cc()) {
         stream << "CHAN" << setw(2) <<  note_chan() << " CC#  ";

@@ -21,6 +21,7 @@ public:
 
     int note_chan();
     int note_value();
+    int note_value_scaled();
     int note_velocity();
 
     inline float note_value_f() { return midi_to_f(note_value()); }

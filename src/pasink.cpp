@@ -1,13 +1,16 @@
 #include "pasink.h"
 #include <stdint.h> 
 #include <iostream> 
+#include "audioconfig.h"
 
 using namespace std;
 
 PASink::PASink(const char *device) :
   _device(device)
 {
-
+    if(_device==NULL) {
+        _device = PADEVICE;
+    }
     // init pulse sample specification
     _sample_spec.format = PA_SAMPLE_S16LE;
     _sample_spec.rate = SAMPLERATE;

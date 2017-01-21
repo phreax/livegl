@@ -16,14 +16,15 @@ void *run_thread(void *arg) {
     server->run();
 }
 
-LiveGLServer::LiveGLServer(int port, bool blocking) 
+LiveGLServer::LiveGLServer(char *audio_device, int port, bool blocking) 
     :  _ctx(new zmq::context_t(1))
     ,  _socket(new zmq::socket_t(*_ctx, ZMQ_PULL) )
     ,  _shader(new Shader())
     ,  _blocking(blocking)
-    ,  _audiostream(new PASink())
+    ,  _audiostream(new PASink(audio_device))
     ,  _specta(new SpectralAnalyzer())
     ,  _midiin(new MidiInput(MIDI_PORT))
+    ,  _midi_notes_uniform(new UniformIv("midi_notes", 12))
     ,  _time_uniform(Uniform("time"))
     ,  _time_step_size(0.01)
     ,  _is_paused(false)
@@ -149,6 +150,7 @@ void LiveGLServer::update_uniforms() {
         Uniform *uniform = (Uniform *)it->second;
         uniform->update_shader(_shader->id());
     }
+    _midi_notes_uniform->update_shader(_shader->id());
 }
 
 void LiveGLServer::filter_for_midi_mapping(MidiMessage *midi_msg) {
@@ -172,6 +174,16 @@ void LiveGLServer::filter_for_midi_mapping(MidiMessage *midi_msg) {
         else if(midi_msg->is_start()) {
             _is_paused = !_is_paused;
         }
+    }
+    if(midi_msg->is_note_on()) {
+        unsigned int note = midi_msg->note_value_scaled();
+        _midi_notes_uniform->set_value(note, 1);
+        cout << "Set value " << note <<endl;
+    }
+    if(midi_msg->is_note_off()) {
+        unsigned int note = midi_msg->note_value_scaled();
+        _midi_notes_uniform->set_value(note, 0);
+        cout << "Unset value " << note <<endl;
     }
 }
 

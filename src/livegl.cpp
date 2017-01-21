@@ -120,9 +120,37 @@ void renderScene(void) {
 void init(int argc, char **argv) {
 
     bool blocking = false;
-    if(argc>1) {
-        if(strcmp(argv[1],"-b")==0) blocking = true;
-    }
+    char *audio_device = NULL;
+    char c;
+    while ((c = getopt (argc, argv, "hba:")) != -1)
+        switch (c)
+        {
+            case 'b':
+                blocking = 1;
+                break;
+            case 'h':
+                printf("Usage: %s [options]\n", argv[0]);
+                printf("\n");
+                printf("Options:\n");
+                printf("\t-a: Pulse-audio device\n");
+                printf("\t-b: Blocking server\n");
+                exit(0);
+            case 'a':
+                audio_device = optarg;
+                break;
+            case '?':
+                if (optopt == 'c')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (isprint (optopt))
+                    fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                else
+                    fprintf (stderr,
+                            "Unknown option character `\\x%x'.\n",
+                            optopt);
+                exit(-1);
+            default:
+                abort ();
+        } 
     // init GLUT
     glutInit(&argc,argv);
     
@@ -149,7 +177,7 @@ void init(int argc, char **argv) {
     glEnable(GL_BLEND|GL_TEXTURE_2D|GL_TEXTURE_1D|GL_DEPTH_TEST);
 
     // initilize shader server
-    shader_server = new LiveGLServer();
+    shader_server = new LiveGLServer(audio_device);
     shader_server->bind();
 
     // init mouse variables

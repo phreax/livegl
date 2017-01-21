@@ -35,10 +35,11 @@ class LiveGLServer {
     Uniform                     _time_uniform;
     float                       _time_step_size;
     bool                        _is_paused;
+    UniformIv                  *_midi_notes_uniform; // state for each note 0-11
 
 public:
 
-    LiveGLServer(int port=4223, bool blocking=false);
+    LiveGLServer(char *audio_device=NULL, int port=4223, bool blocking=false);
     ~LiveGLServer();
 
     // bind current shader
