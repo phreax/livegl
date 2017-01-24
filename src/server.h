@@ -8,6 +8,7 @@
 
 #define MIDI_TYPE_CC      0xb
 #define MIDI_TYPE_NOTE_ON 0x9
+#define MAX_MIDI_MASSAGES 20
 
 #include "shader.h" 
 #include "spectral.h"

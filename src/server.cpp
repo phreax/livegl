@@ -130,7 +130,20 @@ void LiveGLServer::poll() {
 
 void LiveGLServer::process_midi() {
   
-    MidiMessage *midi_msg = _midiin->get_message();
+    MidiMessage *last = NULL;
+    MidiMessage *midi_msg = NULL;
+    for(int i=0; i< MAX_MIDI_MASSAGES; i++) {
+        midi_msg = _midiin->get_message();
+        if(!midi_msg) {
+            if(last) {
+                midi_msg = last;
+                cout << "skipped " << i-1 << " midi messages" << endl;
+            }
+            break;
+        }
+        last = midi_msg;
+
+    }
     if(midi_msg) {
         cout <<  midi_msg->to_string() << endl;
         filter_for_midi_mapping(midi_msg);
